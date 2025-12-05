@@ -1,0 +1,554 @@
+import { useState, useContext, useEffect, useRef, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
+import Header from './components/Header/Header'
+import Navbar from './components/Navbar/Navbar'
+import Carousel from './components/Carousel/Carousel'
+import Footer from './components/Footer/Footer'
+import Cart from './components/Cart/Cart'
+import CartPage from './components/Cart/CartPage'
+import ProductSection from './components/Products/ProductSection'
+import ProductGrid from './components/Products/ProductGrid'
+import products from './data/products'
+import Login from './components/Auth/Login'
+import SignUp from './components/Auth/SignUp'
+import AdminPage from './pages/AdminPage'
+import FavoritesPage from './pages/FavoritesPage'
+import CheckoutPage from './pages/CheckoutPage'
+import ProductDetailPage from './pages/ProductDetailPage'
+import OrdersPage from './pages/OrdersPage'
+import StoresPage from './pages/StoresPage'
+import { AuthContext } from './context/AuthContext'
+import { productApi } from './services/api'
+
+function App() {
+  const { isAuthenticated, isAdmin, logout, user, token } = useContext(AuthContext)
+  const location = useLocation()
+
+  // Refs para scroll a secciones
+  const videoJuegosRef = useRef(null)
+  const accesoriosRef = useRef(null)
+  const consolasRef = useRef(null)
+
+  // Productos cargados desde la API (fallback al archivo local)
+  const [allProducts, setAllProducts] = useState(products)
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState('')
+
+  // Cargar carrito desde localStorage (por usuario)
+  const [cart, setCart] = useState(() => {
+    const cartKey = isAuthenticated && user ? `cart_${user.id}` : 'cart_guest'
+    const savedCart = localStorage.getItem(cartKey)
+    return savedCart ? JSON.parse(savedCart) : []
+  })
+
+  // Cargar favoritos desde localStorage (por usuario)
+  const [favorites, setFavorites] = useState(() => {
+    const favKey = isAuthenticated && user ? `favorites_${user.id}` : 'favorites_guest'
+    const savedFavorites = localStorage.getItem(favKey)
+    return savedFavorites ? JSON.parse(savedFavorites) : []
+  })
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState('home')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [authView, setAuthView] = useState('login') // 'login' o 'signup'
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  
+  const fetchProducts = useCallback(async () => {
+    try {
+      setProductsError('')
+      const data = await productApi.list()
+      setAllProducts(Array.isArray(data) ? data : products)
+    } catch (error) {
+      console.error('No se pudieron cargar los productos', error)
+      setProductsError(error.message)
+      setAllProducts(products)
+    } finally {
+      setProductsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
+
+  const handleAddToCart = (product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id)
+      
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      } else {
+        return [...prevCart, { ...product, quantity: 1 }]
+      }
+    })
+  }
+
+  const handleUpdateQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      handleRemoveFromCart(productId)
+      return
+    }
+    
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === productId
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    )
+  }
+
+  const handleRemoveFromCart = (productId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId))
+  }
+
+  const handleClearCart = () => {
+    if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
+      setCart([])
+    }
+  }
+
+  const handleOpenCart = () => {
+    setIsCartOpen(true)
+  }
+
+  const handleCloseCart = () => {
+    setIsCartOpen(false)
+  }
+
+  const handleViewCartPage = () => {
+    setCurrentPage('cart')
+    setIsCartOpen(false)
+  }
+
+  const handleCheckout = () => {
+    setCurrentPage('checkout')
+  }
+
+  const handleLoginClick = () => {
+    setShowAuthModal(true)
+    setAuthView('login')
+  }
+
+  const handleCloseAuthModal = () => {
+    setShowAuthModal(false)
+  }
+
+  const handleGoHome = () => {
+    setCurrentPage('home')
+  }
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category)
+    setSearchTerm('') // Limpiar búsqueda al cambiar categoría
+  }
+
+  const handleScrollToSection = (category) => {
+    // Scroll suave a la sección correspondiente
+    setTimeout(() => {
+      let ref = null
+      if (category === 'videojuegos') ref = videoJuegosRef
+      else if (category === 'accesorios') ref = accesoriosRef
+      else if (category === 'consolas') ref = consolasRef
+      
+      if (ref && ref.current) {
+        ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 100)
+  }
+
+  // ← NUEVAS FUNCIONES
+  const handleViewProduct = (product) => {
+    setSelectedProduct(product)
+    setCurrentPage('product-detail')
+  }
+
+  const handleCloseProductDetail = () => {
+    setSelectedProduct(null)
+    setCurrentPage('home')
+  }
+
+  const handleAddToFavorite = (product) => {
+    setFavorites(prevFav => {
+      const isFavorited = prevFav.find(item => item.id === product.id)
+      if (isFavorited) {
+        return prevFav.filter(item => item.id !== product.id)
+      } else {
+        return [...prevFav, product]
+      }
+    })
+  }
+
+  const isFavorite = (productId) => {
+    return favorites.some(item => item.id === productId)
+  }
+
+  const handleRemoveFavorite = (productId) => {
+    setFavorites(prevFav => prevFav.filter(item => item.id !== productId))
+  }
+
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
+
+  const handleSearch = (term) => {
+    setSearchTerm(term)
+  }
+
+  const handleAdminAddProduct = async (productData) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      const payload = {
+        ...productData,
+        price: Number(productData.price),
+        featured: Boolean(productData.featured)
+      }
+      const created = await productApi.create(token, payload)
+      setAllProducts(prev => [...prev, created])
+      return { success: true, product: created }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
+  const handleAdminEditProduct = async (productId, productData) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      const payload = {
+        ...productData,
+        price: Number(productData.price),
+        featured: Boolean(productData.featured)
+      }
+      const updated = await productApi.update(token, productId, payload)
+      setAllProducts(prev => prev.map(p => p.id === updated.id ? updated : p))
+      return { success: true, product: updated }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
+  const handleAdminDeleteProduct = async (productId) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      await productApi.remove(token, productId)
+      setAllProducts(prev => prev.filter(p => p.id !== productId))
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
+  // Filtrar por categoría Y búsqueda
+  const filteredProducts = allProducts.filter(p => {
+    // Filtro de categoría
+    const matchCategory = selectedCategory === 'all' || p.category === selectedCategory
+
+    // Filtro de búsqueda
+    const matchSearch = searchTerm === '' ||
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase())
+
+    return matchCategory && matchSearch
+  })
+
+  const handleLogout = () => {
+    logout()
+    setCurrentPage('home')
+  }
+
+  
+
+  // Recargar carrito y favoritos cuando cambia el usuario autenticado
+  useEffect(() => {
+    const cartKey = isAuthenticated && user ? `cart_${user.id}` : 'cart_guest'
+    const savedCart = localStorage.getItem(cartKey)
+    setCart(savedCart ? JSON.parse(savedCart) : [])
+
+    const favKey = isAuthenticated && user ? `favorites_${user.id}` : 'favorites_guest'
+    const savedFavorites = localStorage.getItem(favKey)
+    setFavorites(savedFavorites ? JSON.parse(savedFavorites) : [])
+  }, [isAuthenticated, user])
+
+  // Guardar carrito en localStorage cada vez que cambie (separado por usuario)
+  useEffect(() => {
+    const cartKey = isAuthenticated && user ? `cart_${user.id}` : 'cart_guest'
+    localStorage.setItem(cartKey, JSON.stringify(cart))
+  }, [cart, isAuthenticated, user])
+
+  // Guardar favoritos en localStorage cada vez que cambien (separado por usuario)
+  useEffect(() => {
+    const favKey = isAuthenticated && user ? `favorites_${user.id}` : 'favorites_guest'
+    localStorage.setItem(favKey, JSON.stringify(favorites))
+  }, [favorites, isAuthenticated, user])
+
+  // Si intenta ir a admin sin estar autenticado
+  if (location.pathname === '/admin' && !isAuthenticated) {
+    return authView === 'login' ? (
+      <Login
+        onSwitchToSignup={() => setAuthView('signup')}
+        onSuccess={() => {
+          window.location.href = '/admin'
+        }}
+      />
+    ) : (
+      <SignUp
+        onSwitchToLogin={() => setAuthView('login')}
+        onSuccess={() => {
+          // Después del signup, volver al login para que se logee
+          setAuthView('login')
+        }}
+      />
+    )
+  }
+
+  // Si es admin y está en página de admin
+  if (isAdmin && location.pathname === '/admin') {
+    return (
+      <AdminPage
+        products={allProducts}
+        onLogout={handleLogout}
+        onAddProduct={handleAdminAddProduct}
+        onEditProduct={handleAdminEditProduct}
+        onDeleteProduct={handleAdminDeleteProduct}
+        onRefresh={fetchProducts}
+        loading={productsLoading}
+        error={productsError}
+      />
+    )
+  }
+
+  // Si está autenticado pero no es admin e intenta ir a admin
+  if (location.pathname === '/admin' && !isAdmin) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        color: '#fff',
+        textAlign: 'center',
+        background: '#0a0a0a'
+      }}>
+        <div>
+          <h1 style={{ color: '#ff4d4d' }}>❌ Acceso Denegado</h1>
+          <p>Solo los administradores pueden acceder a esta página.</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            style={{
+              padding: '10px 20px',
+              background: '#00ff66',
+              color: '#000',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              marginTop: '1rem',
+              fontWeight: 'bold'
+            }}
+          >
+            ← Volver a la tienda
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Vista normal de la tienda
+  return (
+    <div className="app-container">
+      <div className="header-cart-wrapper">
+        <Header
+          cartCount={cartCount}
+          onCartClick={handleOpenCart}
+          user={isAuthenticated}
+          onLogout={handleLogout}
+          onSearch={handleSearch}
+          favoritesCount={favorites.length}
+          onFavoritesClick={() => setCurrentPage('favorites')}
+          onOrdersClick={() => setCurrentPage('orders')}
+          onLoginClick={handleLoginClick}
+          onStoresClick={() => setCurrentPage('stores')}
+          onSignupClick={() => {
+            setShowAuthModal(true)
+            setAuthView('signup')
+          }}
+          onAccountClick={() => setCurrentPage('orders')}
+        />
+
+        {/* Modal de Autenticación */}
+        {showAuthModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3000
+          }}>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={handleCloseAuthModal}
+                style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  zIndex: 3001
+                }}
+              >
+                ✕
+              </button>
+              {authView === 'login' ? (
+                <Login
+                  onSwitchToSignup={() => setAuthView('signup')}
+                  onSuccess={() => {
+                    handleCloseAuthModal()
+                    setCurrentPage('home')
+                  }}
+                />
+              ) : (
+                <SignUp
+                  onSwitchToLogin={() => setAuthView('login')}
+                  onSuccess={() => {
+                    setAuthView('login')
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {isCartOpen && (
+          <Cart
+            isOpen={isCartOpen}
+            onClose={handleCloseCart}
+            items={cart}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveFromCart}
+            onClearCart={handleClearCart}
+            onViewCart={handleViewCartPage}
+            onCheckout={handleCheckout}
+          />
+        )}
+      </div>
+
+      {currentPage !== 'product-detail' && currentPage !== 'stores' && <Navbar onCategorySelect={handleCategorySelect} onScrollToSection={handleScrollToSection} />}
+
+      {currentPage === 'product-detail' && selectedProduct ? (
+        <ProductDetailPage
+          product={selectedProduct}
+          onGoHome={handleCloseProductDetail}
+          onAddToCart={handleAddToCart}
+          onAddToFavorite={handleAddToFavorite}
+          isFavorite={isFavorite(selectedProduct.id)}
+        />
+      ) : currentPage === 'home' ? (
+        <main className="container">
+          <div className="layout">
+            <div className="content-container">
+              <section className="hero">
+                <h2>Bienvenido a Power Play!</h2>
+                <p>Todo para gaming 🎮</p>
+              </section>
+
+              <Carousel 
+                products={allProducts}
+                onViewProduct={handleViewProduct}
+              />
+
+              <ProductSection
+                title="Consolas"
+                icon="🎮"
+                ref={consolasRef}
+                products={allProducts.filter(p => p.category === 'consolas').slice(0, 7)}
+                onAddToCart={handleAddToCart}
+                onViewProduct={handleViewProduct}
+              />
+
+              <ProductSection
+                title="Accesorios"
+                icon="💻"
+                ref={accesoriosRef}
+                products={allProducts.filter(p => p.category === 'accesorios')}
+                onAddToCart={handleAddToCart}
+                onViewProduct={handleViewProduct}
+              />
+
+              <ProductSection
+                title="Videojuegos"
+                icon="🎮"
+                ref={videoJuegosRef}
+                products={allProducts.filter(p => p.category === 'videojuegos')}
+                onAddToCart={handleAddToCart}
+                onViewProduct={handleViewProduct}
+              />
+
+              <ProductSection
+                title="Juegos de Mesa"
+                icon="🃏"
+                products={allProducts.filter(p => p.category === 'juegos-mesa')}
+                onAddToCart={handleAddToCart}
+                onViewProduct={handleViewProduct}
+              />
+            </div>
+          </div>
+        </main>
+      ) : currentPage === 'favorites' ? (
+        <FavoritesPage
+          favorites={favorites}
+          onAddToCart={handleAddToCart}
+          onViewProduct={handleViewProduct}
+          onRemoveFavorite={handleRemoveFavorite}
+          onGoHome={handleGoHome}
+        />
+      ) : currentPage === 'checkout' ? (
+        <CheckoutPage
+          cartItems={cart}
+          onGoHome={handleGoHome}
+          onClearCart={handleClearCart}
+        />
+      ) : currentPage === 'orders' ? (
+        <OrdersPage
+          onGoHome={handleGoHome}
+        />
+      ) : currentPage === 'stores' ? (
+        <StoresPage
+          onGoHome={handleGoHome}
+        />
+      ) : (
+        <CartPage
+          cartItems={cart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveFromCart}
+          onClearCart={handleClearCart}
+          onGoHome={handleGoHome}
+          onCheckout={() => setCurrentPage('checkout')}
+        />
+      )}
+
+      <Footer />
+    </div>
+  )
+}
+
+export default App

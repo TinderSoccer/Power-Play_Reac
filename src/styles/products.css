@@ -1,0 +1,233 @@
+/* ===== PRODUCTS CAROUSEL ===== */
+/* Este archivo es SOLO para el carrusel de productos (tarjetas con scroll) */
+
+.products-section {
+  margin: 5px 0;
+  padding: 0;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  color: var(--primary);
+  margin-bottom: 5px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.divider {
+  height: 2px;
+  background: linear-gradient(90deg, #1E90FF, #39FF14, #FF00FF);
+  border-radius: 2px;
+  margin: 3px auto;
+  width: 120px;
+}
+
+/* PRODUCTOS CONTAINER */
+.products-carousel {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  overflow: visible;
+}
+
+/* PRODUCTOS SCROLL - Area scrolleable */
+.products-carousel__scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 10px 20px;
+  flex: 1;
+}
+
+.products-carousel__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* PRODUCTOS CARD */
+.product-card {
+  flex: 0 0 200px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(57, 255, 20, 0.3);
+}
+
+.product-image {
+  width: 100%;
+  height: 140px;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  padding: 10px;
+}
+
+.product-info {
+  padding: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.product-name {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  font-weight: 500;
+  line-height: 1.2;
+  flex: 1;
+  min-height: 2rem;
+}
+
+.product-price {
+  font-size: 1rem;
+  color: var(--accent);
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+}
+
+.btn-add-cart {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.btn-add-cart:hover {
+  background: #00cc52;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+}
+
+/* PRODUCTOS CONTROLS - Botones scroll */
+.products-carousel__control {
+  background: rgba(30, 144, 255, 0.2);
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  border-radius: 8px;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.products-carousel__control--left {
+  order: -1;
+}
+
+.products-carousel__control--right {
+  order: 3;
+}
+
+.products-carousel__control:hover {
+  background: rgba(30, 144, 255, 0.4);
+  border-color: var(--primary);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.3);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .product-card {
+    flex: 0 0 180px;
+  }
+
+  .product-image {
+    height: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-card {
+    flex: 0 0 150px;
+  }
+
+  .product-image {
+    height: 100px;
+  }
+
+  .product-name {
+    font-size: 0.7rem;
+    min-height: 1.5rem;
+  }
+
+  .product-price {
+    font-size: 0.9rem;
+  }
+
+  .btn-add-cart {
+    font-size: 0.65rem;
+    padding: 4px 6px;
+  }
+
+  .products-carousel__control {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-card {
+    flex: 0 0 130px;
+  }
+
+  .product-image {
+    height: 85px;
+  }
+
+  .product-name {
+    font-size: 0.65rem;
+    min-height: 1.3rem;
+  }
+
+  .product-price {
+    font-size: 0.85rem;
+  }
+
+  .products-carousel__control {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
+  }
+}
