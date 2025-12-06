@@ -8,10 +8,10 @@ const FALLBACK_CATEGORIES = [
 ]
 
 const gradients = [
-  'linear-gradient(135deg, #d8e6ff, #fef3c7)',
-  'linear-gradient(135deg, #fdf2f8, #e0f2fe)',
-  'linear-gradient(135deg, #fce7f3, #e9d5ff)',
-  'linear-gradient(135deg, #dcfce7, #e0f2fe)'
+  'linear-gradient(135deg, rgba(0,245,255,0.85), rgba(7,13,36,0.95))',
+  'linear-gradient(135deg, rgba(124,58,237,0.85), rgba(9,9,27,0.95))',
+  'linear-gradient(135deg, rgba(255,45,149,0.8), rgba(6,10,28,0.95))',
+  'linear-gradient(135deg, rgba(14,165,233,0.8), rgba(4,9,27,0.95))'
 ]
 
 const CategoryShowcase = ({ categories = [], products = [], onSelect }) => {

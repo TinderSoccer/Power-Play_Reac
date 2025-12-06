@@ -1,7 +1,6 @@
 import { useState, useContext, useEffect, useRef, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import Header from './components/Header/Header'
-import Navbar from './components/Navbar/Navbar'
 import Carousel from './components/Carousel/Carousel'
 import Footer from './components/Footer/Footer'
 import Cart from './components/Cart/Cart'
@@ -284,7 +283,15 @@ function App() {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
 
   const handleSearch = (term) => {
-    setSearchTerm(term)
+    const normalized = (term || '').trim()
+    setSearchTerm(normalized)
+    setSelectedCategory('all')
+    if (normalized) {
+      setCurrentPage('search')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      setCurrentPage('home')
+    }
   }
 
   const handleAdminAddProduct = async (productData) => {
@@ -410,16 +417,24 @@ function App() {
 
   // Filtrar por categoría Y búsqueda
   const filteredProducts = allProducts.filter(p => {
-    // Filtro de categoría
     const matchCategory = selectedCategory === 'all' || p.category === selectedCategory
-
-    // Filtro de búsqueda
     const matchSearch = searchTerm === '' ||
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchTerm.toLowerCase())
-
+      (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.category || '').toLowerCase().includes(searchTerm.toLowerCase())
     return matchCategory && matchSearch
   })
+
+  const normalizedSearchTerm = searchTerm ? searchTerm.toLowerCase() : ''
+  const searchResults = normalizedSearchTerm
+    ? allProducts.filter(p => {
+        const name = (p.name || '').toLowerCase()
+        const categoryValue = (p.category || '').toLowerCase()
+        const sku = (p.sku || '').toLowerCase()
+        return name.includes(normalizedSearchTerm) ||
+          categoryValue.includes(normalizedSearchTerm) ||
+          sku.includes(normalizedSearchTerm)
+      })
+    : []
 
   const handleLogout = () => {
     logout()
@@ -656,8 +671,6 @@ function App() {
         )}
       </div>
 
-      {currentPage !== 'product-detail' && currentPage !== 'stores' && <Navbar onCategorySelect={handleCategorySelect} onScrollToSection={handleScrollToSection} />}
-
       {currentPage === 'product-detail' && selectedProduct ? (
         <ProductDetailPage
           product={selectedProduct}
@@ -720,6 +733,34 @@ function App() {
                 onAddToCart={handleAddToCart}
                 onViewProduct={handleViewProduct}
               />
+            </div>
+          </div>
+        </main>
+      ) : currentPage === 'search' ? (
+        <main className="container">
+          <div className="layout">
+            <div className="content-container">
+              <section className="hero">
+                <h2>Resultados para "{searchTerm}"</h2>
+                <p>{searchResults.length > 0 ? `${searchResults.length} producto(s) encontrados` : 'No encontramos resultados, intenta con otro término.'}</p>
+              </section>
+
+              {searchResults.length > 0 ? (
+                <ProductGrid
+                  products={searchResults}
+                  onAddToCart={handleAddToCart}
+                  onViewProduct={handleViewProduct}
+                  onAddToFavorite={handleAddToFavorite}
+                  favorites={favorites}
+                  title={`Resultados para "${searchTerm}"`}
+                  subtitle={`${searchResults.length} producto(s) disponibles`}
+                />
+              ) : (
+                <div className="empty-search">
+                  <p>No encontramos productos que coincidan con "{searchTerm}".</p>
+                  <button onClick={handleGoHome}>Volver a la tienda</button>
+                </div>
+              )}
             </div>
           </div>
         </main>

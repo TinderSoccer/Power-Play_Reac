@@ -119,6 +119,41 @@ const ProductDetailPage = ({
     { name: 'Power Play Las Condes', stock: 'No disponible' }
   ]
 
+  const highlightBadges = [
+    'Entrega en 48 hrs en RM',
+    'Retiro gratis en tienda',
+    'Garantía oficial 12 meses'
+  ]
+
+  const categoryFeatures = {
+    consolas: ['Incluye control original', 'Compatible con streaming 4K', 'Wi-Fi 6 listo para eSports'],
+    accesorios: ['Material premium resistente', 'Compatibilidad multi plataforma', 'Listo para sesiones extensas'],
+    videojuegos: ['Audio 3D optimizado', 'Actualizaciones constantes', 'Multiplayer global'],
+    'juegos-mesa': ['Componentes de alta calidad', 'Reglamento en español', 'Experiencia cooperativa']
+  }
+
+  const featureList = categoryFeatures[product.category] || ['Soporte técnico prioritario', 'Pago seguro en línea', 'Stock garantizado']
+
+  const specTiles = [
+    { label: 'Categoría', value: product.category },
+    { label: 'SKU', value: product.sku || 'Pendiente' },
+    { label: 'Estado', value: 'Nuevo / Sellado' },
+    { label: 'Disponibilidad', value: 'Despacho nacional' }
+  ]
+
+  const extraPanels = [
+    {
+      title: 'Incluye',
+      items: product.category === 'consolas'
+        ? ['Cable HDMI 2.1', 'Cable de poder', 'Manual rápido']
+        : ['Guía digital', 'Asistencia remota', 'Tracking de pedidos']
+    },
+    {
+      title: 'Beneficios Power Play',
+      items: ['Puntos acumulables en cada compra', 'Soporte vía WhatsApp 24/7', 'Extensión de garantía opcional']
+    }
+  ]
+
   const handlePrevImage = () => {
     const currentIndex = gallery.indexOf(selectedImage)
     const prevIndex = currentIndex === 0 ? gallery.length - 1 : currentIndex - 1
@@ -212,10 +247,25 @@ const ProductDetailPage = ({
             )}
           </div>
 
-          {/* PRECIO Y SKU */}
-          <div className="price-sku-section">
-            <div className="product-price-weplay">{formatPrice(product.price)}</div>
-            <div className="product-sku-weplay">SKU#: {product.sku}</div>
+        {/* PRECIO Y SKU */}
+        <div className="price-sku-section">
+          <div className="product-price-weplay">{formatPrice(product.price)}</div>
+          <div className="product-sku-weplay">SKU#: {product.sku}</div>
+        </div>
+
+          <div className="detail-highlights">
+            {highlightBadges.map(badge => (
+              <span key={badge} className="highlight-chip">{badge}</span>
+            ))}
+          </div>
+
+          <div className="detail-meta-grid">
+            {specTiles.map(tile => (
+              <div key={tile.label} className="meta-tile">
+                <span>{tile.label}</span>
+                <strong>{tile.value}</strong>
+              </div>
+            ))}
           </div>
 
           {/* CANTIDAD, AGREGAR Y FAVORITO */}
@@ -236,6 +286,15 @@ const ProductDetailPage = ({
             >
               {isFavorite ? '♥' : '♡'}
             </button>
+          </div>
+
+          <div className="feature-list">
+            <strong>Características clave:</strong>
+            <ul>
+              {featureList.map(item => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </div>
 
           {/* COMPARTIR EN REDES */}
@@ -288,6 +347,19 @@ const ProductDetailPage = ({
             }
           </p>
         </div>
+      </div>
+
+      <div className="detail-extra-panels">
+        {extraPanels.map(panel => (
+          <div key={panel.title} className="extra-card">
+            <h4>{panel.title}</h4>
+            <ul>
+              {panel.items.map(item => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   )

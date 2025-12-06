@@ -1,10 +1,11 @@
 .category-showcase {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 20px;
+  background: rgba(3, 9, 32, 0.82);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 28px;
   padding: 2rem;
   margin: 1.5rem 0 2.5rem;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 35px 60px rgba(1, 4, 20, 0.85);
+  backdrop-filter: blur(12px);
 }
 
 .category-showcase__header {
@@ -17,25 +18,28 @@
 
 .category-showcase__header h3 {
   font-size: 1.75rem;
-  color: #0f172a;
+  color: #f8fafc;
   margin-top: 0.25rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .category-showcase__header .eyebrow {
-  letter-spacing: 0.12em;
-  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  color: #64748b;
+  color: #818cf8;
   font-weight: 600;
 }
 
 .category-showcase__badge {
-  background: #eef2ff;
-  color: #4338ca;
+  background: rgba(0, 245, 255, 0.15);
+  color: #00f5ff;
   padding: 0.35rem 0.9rem;
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
+  border: 1px solid rgba(0, 245, 255, 0.5);
 }
 
 .category-showcase__chips {
@@ -46,29 +50,29 @@
 }
 
 .category-chip {
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.4);
   border-radius: 999px;
   padding: 0.65rem 1.2rem;
-  background: #f8fafc;
-  color: #0f172a;
+  background: rgba(15, 23, 42, 0.65);
+  color: #e2e8f0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .category-chip small {
-  color: #475569;
+  color: #94a3b8;
   font-weight: 500;
 }
 
 .category-chip:hover {
-  border-color: #2563eb;
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
-  transform: translateY(-2px);
+  border-color: rgba(0,245,255,0.8);
+  box-shadow: 0 15px 35px rgba(0, 12, 46, 0.9);
+  transform: translateY(-3px);
 }
 
 .category-showcase__grid {
@@ -80,7 +84,7 @@
 
 .category-card {
   min-height: 200px;
-  border-radius: 18px;
+  border-radius: 22px;
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
@@ -89,17 +93,19 @@
   justify-content: space-between;
   background-size: cover;
   background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
 }
 
 .category-card__content {
-  color: #0f172a;
+  color: #050914;
 }
 
 .category-card__eyebrow {
   text-transform: uppercase;
   font-size: 0.75rem;
-  color: #475569;
-  letter-spacing: 0.2em;
+  color: rgba(15, 23, 42, 0.75);
+  letter-spacing: 0.3em;
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
@@ -110,7 +116,7 @@
 }
 
 .category-card p {
-  color: #475569;
+  color: rgba(15, 23, 42, 0.85);
   line-height: 1.4;
   max-width: 28ch;
 }
@@ -125,27 +131,27 @@
 }
 
 .category-card__pill {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.85);
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   font-weight: 600;
-  color: #0f172a;
+  color: #050914;
 }
 
 .category-card__actions button {
-  background: #111727;
-  color: white;
+  background: linear-gradient(135deg, #00f5ff, #7c3aed);
+  color: #050914;
   border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  padding: 0.5rem 1.2rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .category-card__actions button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.45);
 }
 
 @media (max-width: 640px) {

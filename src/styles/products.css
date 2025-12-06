@@ -2,30 +2,35 @@
 /* Este archivo es SOLO para el carrusel de productos (tarjetas con scroll) */
 
 .products-section {
-  margin: 5px 0;
-  padding: 0;
+  margin: 30px 0;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .section-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.3rem;
-  color: var(--primary);
-  margin-bottom: 5px;
+  font-size: 1.4rem;
+  color: #0f172a;
+  margin-bottom: 6px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
 }
 
 .divider {
-  height: 2px;
-  background: linear-gradient(90deg, #1E90FF, #39FF14, #FF00FF);
-  border-radius: 2px;
-  margin: 3px auto;
-  width: 120px;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, #7c3aed);
+  border-radius: 999px;
+  margin: 8px auto 18px;
+  width: 160px;
 }
 
 /* PRODUCTOS CONTAINER */
@@ -54,25 +59,26 @@
 
 /* PRODUCTOS CARD */
 .product-card {
-  flex: 0 0 200px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  flex: 0 0 260px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 20px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 25px 35px rgba(15, 23, 42, 0.08);
 }
 
 .product-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(57, 255, 20, 0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.12);
 }
 
 .product-image {
   width: 100%;
-  height: 140px;
-  background: rgba(0, 0, 0, 0.3);
+  height: 190px;
+  background: radial-gradient(circle, rgba(243, 246, 255, 0.9), rgba(226, 232, 240, 0.4));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,41 +102,40 @@
 }
 
 .product-name {
-  font-size: 0.8rem;
-  color: var(--text-2);
-  font-weight: 500;
-  line-height: 1.2;
+  font-size: 0.95rem;
+  color: #0f172a;
+  font-weight: 600;
+  line-height: 1.3;
   flex: 1;
-  min-height: 2rem;
+  min-height: 2.4rem;
 }
 
 .product-price {
-  font-size: 1rem;
-  color: var(--accent);
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+  font-size: 1.2rem;
+  color: #111827;
+  font-weight: 700;
 }
 
 .btn-add-cart {
-  background: var(--accent);
-  color: #000;
+  background: #111727;
+  color: #fff;
   border: none;
-  padding: 6px 8px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
   cursor: pointer;
-  font-weight: bold;
-  font-size: 0.75rem;
+  font-weight: 600;
+  font-size: 0.85rem;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 6px;
 }
 
 .btn-add-cart:hover {
-  background: #00cc52;
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+  background: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(15, 23, 42, 0.25);
 }
 
 /* PRODUCTOS CONTROLS - Botones scroll */

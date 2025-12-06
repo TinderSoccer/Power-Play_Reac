@@ -1,7 +1,15 @@
 import React from 'react'
 import '../../styles/products-grid.css'
 
-const ProductGrid = ({ products, onAddToCart, onViewProduct, onAddToFavorite, favorites }) => {
+const ProductGrid = ({
+  products = [],
+  onAddToCart,
+  onViewProduct,
+  onAddToFavorite,
+  favorites = [],
+  title = '🎮 Todos Nuestros Productos',
+  subtitle = 'Descubre nuestra amplia selección de gaming'
+}) => {
   const isFavorite = (productId) => {
     return favorites.some(item => item.id === productId)
   }
@@ -15,8 +23,8 @@ const ProductGrid = ({ products, onAddToCart, onViewProduct, onAddToFavorite, fa
   return (
     <section className="products-grid-section">
       <div className="products-grid-header">
-        <h2 className="products-grid-title">🎮 Todos Nuestros Productos</h2>
-        <p className="products-grid-subtitle">Descubre nuestra amplia selección de gaming</p>
+        <h2 className="products-grid-title">{title}</h2>
+        <p className="products-grid-subtitle">{subtitle}</p>
         <div className="products-grid-divider"></div>
       </div>
 
