@@ -1,0 +1,63 @@
+.favorites-shell {
+  background: #f3f6ff;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.favorites-hero {
+  background: #fff;
+  border: 1px solid rgba(226,232,240,0.9);
+  border-radius: 28px;
+  padding: 2rem;
+  margin: 0 6vw;
+  margin-top: 20px;
+  box-shadow: 0 25px 45px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.favorites-hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #0f172a;
+}
+
+.favorites-hero button {
+  border: none;
+  border-radius: 999px;
+  background: #111727;
+  color: #fff;
+  padding: 0.85rem 1.6rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.favorites-empty {
+  background: #fff;
+  border: 1px solid rgba(226,232,240,0.9);
+  border-radius: 24px;
+  padding: 2rem;
+  margin: 2rem 6vw;
+  text-align: center;
+  box-shadow: 0 25px 45px rgba(15, 23, 42, 0.08);
+}
+
+.favorites-empty button {
+  margin-top: 1rem;
+  border: none;
+  background: #111727;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.75rem 1.4rem;
+}
+
+@media (max-width: 768px) {
+  .favorites-hero,
+  .favorites-empty {
+    margin: 20px;
+    padding: 1.5rem;
+  }
+}
