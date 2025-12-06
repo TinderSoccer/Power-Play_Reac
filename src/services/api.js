@@ -69,6 +69,12 @@ export const orderApi = {
     method: 'POST',
     body: payload,
     token
+  }),
+  adminList: (token) => request('/api/orders/admin', { token }),
+  updateStatus: (token, id, status) => request(`/api/orders/${id}/status`, {
+    method: 'PUT',
+    body: { status },
+    token
   })
 }
 

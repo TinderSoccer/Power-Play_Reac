@@ -17,7 +17,7 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import OrdersPage from './pages/OrdersPage'
 import StoresPage from './pages/StoresPage'
 import { AuthContext } from './context/AuthContext'
-import { productApi, cartApi, categoryApi, userApi } from './services/api'
+import { productApi, cartApi, categoryApi, userApi, orderApi } from './services/api'
 import CategoryMenu from './components/Categories/CategoryMenu'
 
 const DEFAULT_CATEGORY_OPTIONS = [
@@ -62,6 +62,9 @@ function App() {
   const [users, setUsers] = useState([])
   const [usersLoading, setUsersLoading] = useState(false)
   const [usersError, setUsersError] = useState('')
+  const [adminOrders, setAdminOrders] = useState([])
+  const [adminOrdersLoading, setAdminOrdersLoading] = useState(false)
+  const [adminOrdersError, setAdminOrdersError] = useState('')
 
   // Carrito sincronizado (API para usuarios autenticados, localStorage para invitados)
   const [cart, setCart] = useState(() => {
@@ -132,6 +135,26 @@ function App() {
     }
   }, [isAdmin, token])
 
+  const fetchAdminOrders = useCallback(async () => {
+    if (!isAdmin || !token) {
+      setAdminOrders([])
+      return
+    }
+
+    try {
+      setAdminOrdersError('')
+      setAdminOrdersLoading(true)
+      const data = await orderApi.adminList(token)
+      setAdminOrders(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('No se pudieron cargar las órdenes', error)
+      setAdminOrdersError(error.message)
+      setAdminOrders([])
+    } finally {
+      setAdminOrdersLoading(false)
+    }
+  }, [isAdmin, token])
+
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
@@ -143,6 +166,10 @@ function App() {
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers])
+
+  useEffect(() => {
+    fetchAdminOrders()
+  }, [fetchAdminOrders])
 
   const handleAddToCart = (product) => {
     setCart(prevCart => {
@@ -295,6 +322,20 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       setCurrentPage('home')
+    }
+  }
+
+  const handleAdminUpdateOrderStatus = async (orderId, status) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      const updated = await orderApi.updateStatus(token, orderId, status)
+      setAdminOrders(prev => prev.map(order => order.id === updated.id ? updated : order))
+      return { success: true, order: updated }
+    } catch (error) {
+      return { success: false, message: error.message }
     }
   }
 
@@ -457,6 +498,13 @@ function App() {
     setCurrentPage('home')
   }
 
+  const handleAdminRefresh = () => {
+    fetchProducts()
+    fetchCategories()
+    fetchUsers()
+    fetchAdminOrders()
+  }
+
   // Cargar carrito desde API/local según autenticación
   useEffect(() => {
     cartSyncedRef.current = false
@@ -550,17 +598,21 @@ function App() {
         users={users}
         usersLoading={usersLoading}
         usersError={usersError}
+        orders={adminOrders}
+        ordersLoading={adminOrdersLoading}
+        ordersError={adminOrdersError}
         onLogout={handleLogout}
         onAddProduct={handleAdminAddProduct}
         onEditProduct={handleAdminEditProduct}
         onDeleteProduct={handleAdminDeleteProduct}
-        onRefresh={fetchProducts}
+        onRefresh={handleAdminRefresh}
         loading={productsLoading}
         error={productsError}
         onAddCategory={handleAddCategory}
         onDeleteCategory={handleDeleteCategory}
         onUpdateUserRole={handleUpdateUserRole}
         onDeleteUser={handleDeleteUser}
+        onUpdateOrderStatus={handleAdminUpdateOrderStatus}
       />
     )
   }

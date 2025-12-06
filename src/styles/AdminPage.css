@@ -144,6 +144,15 @@
   margin-top: 2rem;
 }
 
+.admin-orders {
+  background: #fff;
+  border-radius: 24px;
+  border: 1px solid rgba(226,232,240,0.9);
+  padding: 1.75rem;
+  box-shadow: 0 28px 55px rgba(15,23,42,0.12);
+  margin-top: 2rem;
+}
+
 .admin-products h2,
 .admin-categories h2,
 .admin-users h2 {
@@ -298,6 +307,71 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+.order-list-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.order-admin-card {
+  border: 1px solid rgba(226,232,240,0.9);
+  border-radius: 20px;
+  padding: 1.25rem;
+  background: #fff;
+  box-shadow: 0 18px 35px rgba(15,23,42,0.08);
+}
+
+.order-admin-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.order-admin-header small {
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.order-status-select select {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.4);
+  padding: 0.35rem 0.75rem;
+  background: #f8fafc;
+}
+
+.order-admin-body {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  border-top: 1px solid rgba(226,232,240,0.8);
+  padding-top: 1rem;
+}
+
+.order-items-admin {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(226,232,240,0.8);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.order-item-row {
+  display: grid;
+  grid-template-columns: 2fr 0.5fr 0.8fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(226,232,240,0.6);
+}
+
+.order-item-row:last-child {
+  border-bottom: none;
 }
 
 @media (max-width: 1024px) {

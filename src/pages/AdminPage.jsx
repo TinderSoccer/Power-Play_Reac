@@ -8,6 +8,8 @@ const DEFAULT_CATEGORY_OPTIONS = [
   { id: 'default-juegos-mesa', value: 'juegos-mesa', label: 'Juegos de Mesa' }
 ]
 
+const ORDER_STATUSES = ['Pendiente', 'Procesando', 'Enviado', 'Entregado', 'Cancelado']
+
 const AdminPage = ({
   products = [],
   categories = [],
@@ -16,6 +18,9 @@ const AdminPage = ({
   users = [],
   usersLoading,
   usersError,
+  orders = [],
+  ordersLoading,
+  ordersError,
   onLogout,
   onAddProduct,
   onEditProduct,
@@ -24,6 +29,7 @@ const AdminPage = ({
   onDeleteCategory,
   onUpdateUserRole,
   onDeleteUser,
+  onUpdateOrderStatus,
   onRefresh,
   loading,
   error
@@ -44,6 +50,7 @@ const AdminPage = ({
   const [newCategory, setNewCategory] = useState({ name: '', description: '' })
   const [categoryStatus, setCategoryStatus] = useState(null)
   const [userStatus, setUserStatus] = useState(null)
+  const [orderStatusMessage, setOrderStatusMessage] = useState(null)
 
   const categoryOptions = useMemo(() => {
     if (Array.isArray(categories) && categories.length > 0) {
@@ -196,8 +203,24 @@ const AdminPage = ({
   const tabs = [
     { id: 'products', label: 'Productos' },
     { id: 'categories', label: 'Categorías' },
-    { id: 'users', label: 'Usuarios' }
+    { id: 'users', label: 'Usuarios' },
+    { id: 'orders', label: 'Órdenes' }
   ]
+
+  const formatCLP = (value) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value || 0)
+  }
+
+  const handleOrderStatusChange = async (order, status) => {
+    if (!onUpdateOrderStatus || status === order.status) return
+    const result = await onUpdateOrderStatus(order.id, status)
+    if (result?.success) {
+      setOrderStatusMessage({ type: 'success', message: 'Estado actualizado' })
+    } else {
+      setOrderStatusMessage({ type: 'error', message: result?.message || 'No se pudo actualizar' })
+    }
+    setTimeout(() => setOrderStatusMessage(null), 4000)
+  }
 
   return (
     <div className="admin-page">
@@ -243,6 +266,10 @@ const AdminPage = ({
         <div className="stat-card">
           <h3>Categorías Activas</h3>
           <p className="stat-value">{categoryOptions.length}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Órdenes</h3>
+          <p className="stat-value">{orders.length}</p>
         </div>
       </div>
 
@@ -498,6 +525,84 @@ const AdminPage = ({
                       </button>
                     </div>
                   </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'orders' && (
+        <div className="admin-orders">
+          {ordersLoading ? (
+            <p style={{ color: '#64748b' }}>Cargando órdenes...</p>
+          ) : (
+            <>
+              {(ordersError || orderStatusMessage) && (
+                <div className={`admin-alert ${ordersError || orderStatusMessage?.type === 'error' ? 'alert-error' : 'alert-success'}`}>
+                  {ordersError || orderStatusMessage?.message}
+                </div>
+              )}
+              <div className="order-list-admin">
+                {orders.map(order => (
+                  <article key={order.id} className="order-admin-card">
+                    <header className="order-admin-header">
+                      <div>
+                        <small>ID ORDEN</small>
+                        <strong>{order.id}</strong>
+                      </div>
+                      <div>
+                        <small>Cliente</small>
+                        <strong>{order.formData?.fullName || '—'}</strong>
+                      </div>
+                      <div>
+                        <small>Total</small>
+                        <strong>{formatCLP(order.total)}</strong>
+                      </div>
+                      <div className="order-status-select">
+                        <small>Estado</small>
+                        <select value={order.status} onChange={(e) => handleOrderStatusChange(order, e.target.value)}>
+                          {ORDER_STATUSES.map(statusOption => (
+                            <option key={statusOption} value={statusOption}>{statusOption}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </header>
+                    <div className="order-admin-body">
+                      <div>
+                        <small>Contacto</small>
+                        <p>{order.formData?.email}</p>
+                        <p>{order.formData?.phone}</p>
+                      </div>
+                      <div>
+                        <small>Dirección</small>
+                        <p>{order.formData?.address}</p>
+                        <p>{order.formData?.city}, {order.formData?.postalCode}</p>
+                      </div>
+                      <div>
+                        <small>Creada</small>
+                        <p>{new Date(order.createdAt).toLocaleDateString('es-CL')}</p>
+                      </div>
+                    </div>
+                    <div className="order-items-admin">
+                      {order.cartItems?.map(item => (
+                        <div key={item.productId || item.id} className="order-item-row">
+                          <div>
+                            <p>{item.name}</p>
+                            <small>SKU: {item.sku || '—'}</small>
+                          </div>
+                          <div>
+                            <small>Cant.</small>
+                            <p>{item.quantity}</p>
+                          </div>
+                          <div>
+                            <small>Total</small>
+                            <p>{formatCLP(item.price * item.quantity)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
                 ))}
               </div>
             </>
