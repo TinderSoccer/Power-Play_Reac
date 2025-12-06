@@ -72,6 +72,23 @@ export const orderApi = {
   })
 }
 
+export const categoryApi = {
+  list: () => request('/api/categories')
+}
+
+export const cartApi = {
+  get: (token) => request('/api/cart', { token }),
+  save: (token, items) => request('/api/cart', {
+    method: 'PUT',
+    body: { items },
+    token
+  }),
+  clear: (token) => request('/api/cart', {
+    method: 'DELETE',
+    token
+  })
+}
+
 export const healthApi = {
   check: () => request('/api/health')
 }

@@ -18,7 +18,23 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import OrdersPage from './pages/OrdersPage'
 import StoresPage from './pages/StoresPage'
 import { AuthContext } from './context/AuthContext'
-import { productApi } from './services/api'
+import { productApi, cartApi } from './services/api'
+
+const normalizeCartItem = (item) => ({
+  ...item,
+  id: item.id || item.productId,
+  productId: item.productId || item.id,
+  quantity: item.quantity ?? 1
+})
+
+const mapCartForApi = (items) => items.map(item => ({
+  productId: item.productId || item.id,
+  name: item.name,
+  price: item.price,
+  image: item.image,
+  sku: item.sku,
+  quantity: item.quantity
+}))
 
 function App() {
   const { isAuthenticated, isAdmin, logout, user, token } = useContext(AuthContext)
@@ -34,12 +50,12 @@ function App() {
   const [productsLoading, setProductsLoading] = useState(true)
   const [productsError, setProductsError] = useState('')
 
-  // Cargar carrito desde localStorage (por usuario)
+  // Carrito sincronizado (API para usuarios autenticados, localStorage para invitados)
   const [cart, setCart] = useState(() => {
-    const cartKey = isAuthenticated && user ? `cart_${user.id}` : 'cart_guest'
-    const savedCart = localStorage.getItem(cartKey)
-    return savedCart ? JSON.parse(savedCart) : []
+    const savedCart = localStorage.getItem('cart_guest')
+    return savedCart ? JSON.parse(savedCart).map(normalizeCartItem) : []
   })
+  const cartSyncedRef = useRef(false)
 
   // Cargar favoritos desde localStorage (por usuario)
   const [favorites, setFavorites] = useState(() => {
@@ -84,7 +100,7 @@ function App() {
             : item
         )
       } else {
-        return [...prevCart, { ...product, quantity: 1 }]
+        return [...prevCart, normalizeCartItem({ ...product, quantity: 1 })]
       }
     })
   }
@@ -108,9 +124,16 @@ function App() {
     setCart(prevCart => prevCart.filter(item => item.id !== productId))
   }
 
-  const handleClearCart = () => {
+  const handleClearCart = async () => {
     if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
       setCart([])
+      if (isAuthenticated && token) {
+        try {
+          await cartApi.clear(token)
+        } catch (error) {
+          console.error('No se pudo limpiar el carrito remoto', error)
+        }
+      }
     }
   }
 
@@ -269,24 +292,57 @@ function App() {
     setCurrentPage('home')
   }
 
-  
-
-  // Recargar carrito y favoritos cuando cambia el usuario autenticado
+  // Cargar carrito desde API/local según autenticación
   useEffect(() => {
-    const cartKey = isAuthenticated && user ? `cart_${user.id}` : 'cart_guest'
-    const savedCart = localStorage.getItem(cartKey)
-    setCart(savedCart ? JSON.parse(savedCart) : [])
+    cartSyncedRef.current = false
 
+    const loadCart = async () => {
+      if (isAuthenticated && token) {
+        try {
+          const remoteCart = await cartApi.get(token)
+          const normalized = (remoteCart?.items || []).map(normalizeCartItem)
+          setCart(normalized)
+        } catch (error) {
+          console.error('No se pudo cargar el carrito remoto', error)
+          const fallback = localStorage.getItem('cart_guest')
+          setCart(fallback ? JSON.parse(fallback).map(normalizeCartItem) : [])
+        }
+      } else {
+        const savedCart = localStorage.getItem('cart_guest')
+        setCart(savedCart ? JSON.parse(savedCart).map(normalizeCartItem) : [])
+      }
+
+      cartSyncedRef.current = true
+    }
+
+    loadCart()
+  }, [isAuthenticated, token, user])
+
+  // Guardar carrito (API cuando está autenticado, localStorage para invitados)
+  useEffect(() => {
+    if (!cartSyncedRef.current) return
+
+    const persistCart = async () => {
+      if (isAuthenticated && token) {
+        try {
+          await cartApi.save(token, mapCartForApi(cart))
+        } catch (error) {
+          console.error('No se pudo sincronizar el carrito remoto', error)
+        }
+      } else {
+        localStorage.setItem('cart_guest', JSON.stringify(cart))
+      }
+    }
+
+    persistCart()
+  }, [cart, isAuthenticated, token])
+
+  // Recargar favoritos cuando cambia el usuario autenticado
+  useEffect(() => {
     const favKey = isAuthenticated && user ? `favorites_${user.id}` : 'favorites_guest'
     const savedFavorites = localStorage.getItem(favKey)
     setFavorites(savedFavorites ? JSON.parse(savedFavorites) : [])
   }, [isAuthenticated, user])
-
-  // Guardar carrito en localStorage cada vez que cambie (separado por usuario)
-  useEffect(() => {
-    const cartKey = isAuthenticated && user ? `cart_${user.id}` : 'cart_guest'
-    localStorage.setItem(cartKey, JSON.stringify(cart))
-  }, [cart, isAuthenticated, user])
 
   // Guardar favoritos en localStorage cada vez que cambien (separado por usuario)
   useEffect(() => {
