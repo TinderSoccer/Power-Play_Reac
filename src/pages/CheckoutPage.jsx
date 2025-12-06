@@ -277,7 +277,7 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
                     onChange={handleInputChange}
                   />
                   <label htmlFor="confirmTransfer">
-                    ✓ Confirmo que realicé la transferencia bancaria por ${total.toLocaleString('es-CLP')}
+                    ✓ Confirmo que realicé la transferencia bancaria por ${total.toLocaleString('es-CL')}
                   </label>
                 </div>
 
