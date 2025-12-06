@@ -26,7 +26,12 @@ const CategoryMenu = ({ categories = [], products = [], onSelect }) => {
     }, {})
   }, [products])
 
-  const [open, setOpen] = useState(true)
+  const getInitialOpen = () => {
+    if (typeof window === 'undefined') return true
+    return window.matchMedia('(min-width: 768px)').matches
+  }
+
+  const [open, setOpen] = useState(getInitialOpen)
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 768px)')
