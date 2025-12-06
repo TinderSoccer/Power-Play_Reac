@@ -166,40 +166,33 @@
 }
 
 @media (max-width: 768px) {
+  .products-grid-section {
+    padding: 35px 0 60px;
+  }
+
+  .products-grid-wrapper {
+    padding: 0 12px;
+  }
+
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 18px;
+  }
+
+  .product-grid-card {
+    border-radius: 18px;
   }
 
   .product-grid-image {
-    height: 150px;
+    height: 160px;
   }
 
   .product-grid-name {
-    font-size: 0.85rem;
-    min-height: 2.3rem;
-  }
-
-  .product-grid-price {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
   }
 
   .btn-grid-add {
-    font-size: 0.8rem;
-    padding: 8px;
-  }
-
-  .btn-grid-fav {
-    width: 40px;
-    font-size: 1rem;
-  }
-
-  .products-grid-title {
-    font-size: 1.5rem;
-  }
-
-  .products-grid-divider {
-    width: 200px;
+    width: 100%;
   }
 }
 

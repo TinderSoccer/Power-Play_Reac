@@ -1,11 +1,10 @@
 .category-showcase {
-  background: rgba(3, 9, 32, 0.82);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.9);
   border-radius: 28px;
   padding: 2rem;
   margin: 1.5rem 0 2.5rem;
-  box-shadow: 0 35px 60px rgba(1, 4, 20, 0.85);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 35px 60px rgba(15, 23, 42, 0.08);
 }
 
 .category-showcase__header {
@@ -18,7 +17,7 @@
 
 .category-showcase__header h3 {
   font-size: 1.75rem;
-  color: #f8fafc;
+  color: #0f172a;
   margin-top: 0.25rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -28,18 +27,18 @@
   letter-spacing: 0.2em;
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: #818cf8;
+  color: #6366f1;
   font-weight: 600;
 }
 
 .category-showcase__badge {
-  background: rgba(0, 245, 255, 0.15);
-  color: #00f5ff;
+  background: rgba(59,130,246,0.12);
+  color: #1d4ed8;
   padding: 0.35rem 0.9rem;
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
-  border: 1px solid rgba(0, 245, 255, 0.5);
+  border: 1px solid rgba(59,130,246,0.4);
 }
 
 .category-showcase__chips {
@@ -93,8 +92,8 @@
   justify-content: space-between;
   background-size: cover;
   background-position: center;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(226,232,240,0.9);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
 }
 
 .category-card__content {
@@ -139,8 +138,8 @@
 }
 
 .category-card__actions button {
-  background: linear-gradient(135deg, #00f5ff, #7c3aed);
-  color: #050914;
+  background: #111727;
+  color: #fff;
   border: none;
   border-radius: 999px;
   padding: 0.5rem 1.2rem;
@@ -151,7 +150,17 @@
 
 .category-card__actions button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.45);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+@media (max-width: 900px) {
+  .category-showcase {
+    padding: 1.5rem;
+  }
+
+  .category-showcase__grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
