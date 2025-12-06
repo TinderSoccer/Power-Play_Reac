@@ -18,7 +18,7 @@ import OrdersPage from './pages/OrdersPage'
 import StoresPage from './pages/StoresPage'
 import { AuthContext } from './context/AuthContext'
 import { productApi, cartApi, categoryApi, userApi } from './services/api'
-import CategoryShowcase from './components/Categories/CategoryShowcase'
+import CategoryMenu from './components/Categories/CategoryMenu'
 
 const DEFAULT_CATEGORY_OPTIONS = [
   { value: 'consolas', label: 'Consolas' },
@@ -244,10 +244,14 @@ function App() {
   const handleCategoryShortcut = (category) => {
     const slug = category || 'all'
     handleCategorySelect(slug)
-
-    if (['videojuegos', 'accesorios', 'consolas', 'juegos-mesa'].includes(slug)) {
-      handleScrollToSection(slug)
+    if (slug === 'all') {
+      setCurrentPage('home')
+      handleScrollToSection('consolas')
+      return
     }
+
+    setCurrentPage('category')
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
   }
 
   // ← NUEVAS FUNCIONES
@@ -435,6 +439,18 @@ function App() {
           sku.includes(normalizedSearchTerm)
       })
     : []
+
+  const getCategoryLabel = useCallback((slug) => {
+    if (!slug || slug === 'all') return 'Todos los productos'
+    const fromApi = categoryList.find(cat => (cat.slug || cat.value) === slug)
+    if (fromApi) return fromApi.name || fromApi.label || slug
+    const fallback = DEFAULT_CATEGORY_OPTIONS.find(cat => cat.value === slug)
+    return fallback ? fallback.label : slug
+  }, [categoryList])
+
+  const categoryResults = selectedCategory === 'all'
+    ? allProducts
+    : allProducts.filter(p => p.category === selectedCategory)
 
   const handleLogout = () => {
     logout()
@@ -688,7 +704,7 @@ function App() {
                 <p>Todo para gaming 🎮</p>
               </section>
 
-              <CategoryShowcase
+              <CategoryMenu
                 categories={categoryList}
                 products={allProducts}
                 onSelect={handleCategoryShortcut}
@@ -759,6 +775,34 @@ function App() {
                 <div className="empty-search">
                   <p>No encontramos productos que coincidan con "{searchTerm}".</p>
                   <button onClick={handleGoHome}>Volver a la tienda</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      ) : currentPage === 'category' ? (
+        <main className="container">
+          <div className="layout">
+            <div className="content-container">
+              <section className="hero">
+                <h2>{getCategoryLabel(selectedCategory)}</h2>
+                <p>{categoryResults.length} producto(s) disponibles</p>
+              </section>
+
+              {categoryResults.length > 0 ? (
+                <ProductGrid
+                  products={categoryResults}
+                  onAddToCart={handleAddToCart}
+                  onViewProduct={handleViewProduct}
+                  onAddToFavorite={handleAddToFavorite}
+                  favorites={favorites}
+                  title={`Catálogo: ${getCategoryLabel(selectedCategory)}`}
+                  subtitle={`${categoryResults.length} opciones para tu loadout`}
+                />
+              ) : (
+                <div className="empty-search">
+                  <p>Aún no tenemos productos en esta categoría.</p>
+                  <button onClick={handleGoHome}>Volver al inicio</button>
                 </div>
               )}
             </div>
