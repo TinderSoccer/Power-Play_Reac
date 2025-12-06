@@ -104,6 +104,10 @@ export const userApi = {
     method: 'PUT',
     body: { role },
     token
+  }),
+  remove: (token, id) => request(`/api/users/${id}`, {
+    method: 'DELETE',
+    token
   })
 }
 

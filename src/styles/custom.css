@@ -1,17 +1,17 @@
 /* Colores principales */
 :root {
-    --bg: #000000;
-    --text: #ffffff;
-    --text-2: #d3d3d3;
-    --primary: #1E90FF;
-    --accent: #39FF14;
-    --muted: #111111;
-    --border: #1f1f1f;
-    --mg: #FF00FF;
-    --cel: #00fff7;
-    --fond: rgba(0,0,0,0.75);
-    --azul: blue;
-    --card-bg: #0f0f0f;
+    --bg: #f4f6fb;
+    --text: #0f172a;
+    --text-2: #475569;
+    --primary: #2563eb;
+    --accent: #0ea5e9;
+    --muted: #e2e8f0;
+    --border: #d0d7e2;
+    --mg: #8b5cf6;
+    --cel: #0ea5e9;
+    --fond: rgba(255,255,255,0.9);
+    --azul: #2563eb;
+    --card-bg: #ffffff;
   }
   
   /* Reset básico */
@@ -39,8 +39,8 @@
   
   /* Barra superior delgada */
   .top-bar.thin {
-    background: var(--primary);
-    color: white;
+    background: #111727;
+    color: #fff;
     font-size: 13px;
     padding: 4px 6vw;
     display: flex;
@@ -82,7 +82,7 @@
   
   /* Header principal */
   .top-bar {
-    background: var(--bg);
+    background: var(--fond);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -105,11 +105,10 @@
   }
   
   .logo h1 {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 30px;
+    font-family: 'Space Grotesk', 'Press Start 2P', cursive;
+    font-size: 28px;
     text-align: center;
-    animation: colorCycle 5s infinite alternate;
-    text-shadow: 2px 2px #000;
+    color: var(--text);
   }
   
   @keyframes colorCycle {
@@ -253,9 +252,9 @@
   
   .navbar a:hover,
   .navbar a.active {
-    background: rgba(57,255,20,0.15);
-    color: var(--accent);
-    box-shadow: 0 4px 12px rgba(57,255,20,0.2); /* ← Sombra neón */
+    background: rgba(37, 99, 235, 0.14);
+    color: var(--primary);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
     transform: translateY(-2px);
   }
   
@@ -307,24 +306,23 @@
   
   /* Hero */
   .hero {
-    background: linear-gradient(to right, rgba(30,144,255,.2), rgba(57,255,20,.1));
+    background: linear-gradient(120deg, #e0f2fe 0%, #eef2ff 60%, #ffffff 100%);
     text-align: center;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    animation: neonPulse 6s infinite alternate;
-    box-shadow: 0 0 20px var(--primary), 0 0 40px var(--accent);
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 30px 60px rgba(148, 163, 184, 0.35);
     width: 100%;
     height: auto;
     box-sizing: border-box;
   }
-  
+
   .hero h2 {
     font-size: 1.5rem;
     margin-bottom: 5px;
-    text-shadow: 0 0 8px rgba(30,144,255,.5);
+    color: #0f172a;
   }
-  
+
   .hero p {
     color: var(--text-2);
   }
@@ -353,7 +351,7 @@
       top: 100%;
       left: 0;
       right: 0;
-      background: #0a0a0a;
+      background: #ffffff;
       flex-direction: column;
       padding: 20px 0;
       border-top: 1px solid var(--border);

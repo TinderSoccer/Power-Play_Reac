@@ -23,6 +23,7 @@ const AdminPage = ({
   onAddCategory,
   onDeleteCategory,
   onUpdateUserRole,
+  onDeleteUser,
   onRefresh,
   loading,
   error
@@ -174,6 +175,22 @@ const AdminPage = ({
     }
   }
 
+  const handleDeleteUserLocal = async (user) => {
+    if (!onDeleteUser) return
+    if (user.role === 'admin') {
+      setUserStatus({ type: 'error', message: 'No puedes eliminar administradores' })
+      return
+    }
+    if (!window.confirm(`¿Eliminar a ${user.email}?`)) return
+
+    const result = await onDeleteUser(user.id)
+    if (result?.success) {
+      setUserStatus({ type: 'success', message: 'Usuario eliminado' })
+    } else if (result?.message) {
+      setUserStatus({ type: 'error', message: result.message })
+    }
+  }
+
   const totalValue = products.reduce((sum, p) => sum + Number(p.price || 0), 0)
 
   const tabs = [
@@ -314,6 +331,7 @@ const AdminPage = ({
                       <>
                         <input
                           className="col col-name edit-input"
+                          data-label="Nombre"
                           value={editData.name}
                           onChange={(e) =>
                             setEditData({ ...editData, name: e.target.value })
@@ -322,6 +340,7 @@ const AdminPage = ({
                         <input
                           className="col col-price edit-input"
                           type="number"
+                          data-label="Precio"
                           value={editData.price}
                           onChange={(e) =>
                             setEditData({ ...editData, price: parseInt(e.target.value) || 0 })
@@ -330,6 +349,7 @@ const AdminPage = ({
                         <select
                           className="col col-category edit-input"
                           value={editData.category}
+                          data-label="Categoría"
                           onChange={(e) =>
                             setEditData({ ...editData, category: e.target.value })
                           }
@@ -340,7 +360,7 @@ const AdminPage = ({
                             </option>
                           ))}
                         </select>
-                        <div className="col col-actions">
+                        <div className="col col-actions" data-label="Acciones">
                           <button className="btn-save" onClick={handleSave}>
                             ✓ Guardar
                           </button>
@@ -354,12 +374,12 @@ const AdminPage = ({
                       </>
                     ) : (
                       <>
-                        <div className="col col-name">{product.name}</div>
-                        <div className="col col-price">
+                        <div className="col col-name" data-label="Nombre">{product.name}</div>
+                        <div className="col col-price" data-label="Precio">
                           ${Number(product.price).toLocaleString('es-CL')}
                         </div>
-                        <div className="col col-category">{product.category}</div>
-                        <div className="col col-actions">
+                        <div className="col col-category" data-label="Categoría">{product.category}</div>
+                        <div className="col col-actions" data-label="Acciones">
                           <button className="btn-edit" onClick={() => handleEdit(product)}>
                             Editar
                           </button>
@@ -417,10 +437,10 @@ const AdminPage = ({
               </div>
               {categoryOptions.map(cat => (
                 <div key={cat.id} className="table-row">
-                  <div className="col col-name">{cat.label}</div>
-                  <div className="col col-category">{cat.value}</div>
-                  <div className="col col-price">{cat.description || '—'}</div>
-                  <div className="col col-actions">
+                  <div className="col col-name" data-label="Nombre">{cat.label}</div>
+                  <div className="col col-category" data-label="Slug">{cat.value}</div>
+                  <div className="col col-price" data-label="Descripción">{cat.description || '—'}</div>
+                  <div className="col col-actions" data-label="Acciones">
                     {cat.id?.startsWith('default-') ? (
                       <span style={{ color: '#777' }}>Predeterminada</span>
                     ) : (
@@ -448,16 +468,17 @@ const AdminPage = ({
                 </div>
               )}
               <div className="products-table">
-                <div className="table-header">
+                <div className="table-header users-header">
                   <div className="col col-name">Nombre</div>
                   <div className="col col-category">Email</div>
                   <div className="col col-price">Rol</div>
+                  <div className="col col-actions">Acciones</div>
                 </div>
                 {users.map(user => (
-                  <div key={user.id} className="table-row">
-                    <div className="col col-name">{user.name || 'Sin nombre'}</div>
-                    <div className="col col-category">{user.email}</div>
-                    <div className="col col-price">
+                  <div key={user.id} className="table-row users-row">
+                  <div className="col col-name" data-label="Nombre">{user.name || 'Sin nombre'}</div>
+                  <div className="col col-category" data-label="Email">{user.email}</div>
+                  <div className="col col-price" data-label="Rol">
                       <select
                         className="edit-input"
                         value={user.role}
@@ -466,6 +487,15 @@ const AdminPage = ({
                         <option value="user">Usuario</option>
                         <option value="admin">Administrador</option>
                       </select>
+                    </div>
+                    <div className="col col-actions" data-label="Acciones">
+                      <button
+                        className="btn-delete ghost"
+                        onClick={() => handleDeleteUserLocal(user)}
+                        disabled={user.role === 'admin'}
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </div>
                 ))}

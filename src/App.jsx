@@ -19,6 +19,7 @@ import OrdersPage from './pages/OrdersPage'
 import StoresPage from './pages/StoresPage'
 import { AuthContext } from './context/AuthContext'
 import { productApi, cartApi, categoryApi, userApi } from './services/api'
+import CategoryShowcase from './components/Categories/CategoryShowcase'
 
 const DEFAULT_CATEGORY_OPTIONS = [
   { value: 'consolas', label: 'Consolas' },
@@ -241,6 +242,15 @@ function App() {
     }, 100)
   }
 
+  const handleCategoryShortcut = (category) => {
+    const slug = category || 'all'
+    handleCategorySelect(slug)
+
+    if (['videojuegos', 'accesorios', 'consolas', 'juegos-mesa'].includes(slug)) {
+      handleScrollToSection(slug)
+    }
+  }
+
   // ← NUEVAS FUNCIONES
   const handleViewProduct = (product) => {
     setSelectedProduct(product)
@@ -384,6 +394,20 @@ function App() {
     }
   }
 
+  const handleDeleteUser = async (userId) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      await userApi.remove(token, userId)
+      setUsers(prev => prev.filter(u => u.id !== userId))
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
   // Filtrar por categoría Y búsqueda
   const filteredProducts = allProducts.filter(p => {
     // Filtro de categoría
@@ -487,7 +511,7 @@ function App() {
       : DEFAULT_CATEGORY_OPTIONS
 
     return (
-      <AdminPage
+        <AdminPage
         products={allProducts}
         categories={categoryData}
         categoriesLoading={categoriesLoading}
@@ -505,6 +529,7 @@ function App() {
         onAddCategory={handleAddCategory}
         onDeleteCategory={handleDeleteCategory}
         onUpdateUserRole={handleUpdateUserRole}
+        onDeleteUser={handleDeleteUser}
       />
     )
   }
@@ -517,9 +542,9 @@ function App() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        color: '#fff',
+        color: '#0f172a',
         textAlign: 'center',
-        background: '#0a0a0a'
+        background: 'var(--bg)'
       }}>
         <div>
           <h1 style={{ color: '#ff4d4d' }}>❌ Acceso Denegado</h1>
@@ -528,8 +553,8 @@ function App() {
             onClick={() => window.location.href = '/'}
             style={{
               padding: '10px 20px',
-              background: '#00ff66',
-              color: '#000',
+              background: '#2563eb',
+              color: '#fff',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
@@ -649,6 +674,12 @@ function App() {
                 <h2>Bienvenido a Power Play!</h2>
                 <p>Todo para gaming 🎮</p>
               </section>
+
+              <CategoryShowcase
+                categories={categoryList}
+                products={allProducts}
+                onSelect={handleCategoryShortcut}
+              />
 
               <Carousel 
                 products={allProducts}
