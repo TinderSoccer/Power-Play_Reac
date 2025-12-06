@@ -42,13 +42,15 @@
 /* GRID CONTAINER */
 .products-grid-wrapper {
   width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
   padding: 0 20px;
 }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 34px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 28px;
   width: 100%;
 }
 
