@@ -73,7 +73,16 @@ export const orderApi = {
 }
 
 export const categoryApi = {
-  list: () => request('/api/categories')
+  list: () => request('/api/categories'),
+  create: (token, payload) => request('/api/categories', {
+    method: 'POST',
+    body: payload,
+    token
+  }),
+  remove: (token, id) => request(`/api/categories/${id}`, {
+    method: 'DELETE',
+    token
+  })
 }
 
 export const cartApi = {
@@ -85,6 +94,15 @@ export const cartApi = {
   }),
   clear: (token) => request('/api/cart', {
     method: 'DELETE',
+    token
+  })
+}
+
+export const userApi = {
+  list: (token) => request('/api/users', { token }),
+  updateRole: (token, id, role) => request(`/api/users/${id}/role`, {
+    method: 'PUT',
+    body: { role },
     token
   })
 }

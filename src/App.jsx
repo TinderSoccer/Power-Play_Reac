@@ -18,7 +18,14 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import OrdersPage from './pages/OrdersPage'
 import StoresPage from './pages/StoresPage'
 import { AuthContext } from './context/AuthContext'
-import { productApi, cartApi } from './services/api'
+import { productApi, cartApi, categoryApi, userApi } from './services/api'
+
+const DEFAULT_CATEGORY_OPTIONS = [
+  { value: 'consolas', label: 'Consolas' },
+  { value: 'accesorios', label: 'Accesorios' },
+  { value: 'videojuegos', label: 'Videojuegos' },
+  { value: 'juegos-mesa', label: 'Juegos de Mesa' }
+]
 
 const normalizeCartItem = (item) => ({
   ...item,
@@ -49,6 +56,12 @@ function App() {
   const [allProducts, setAllProducts] = useState(products)
   const [productsLoading, setProductsLoading] = useState(true)
   const [productsError, setProductsError] = useState('')
+  const [categoryList, setCategoryList] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categoriesError, setCategoriesError] = useState('')
+  const [users, setUsers] = useState([])
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [usersError, setUsersError] = useState('')
 
   // Carrito sincronizado (API para usuarios autenticados, localStorage para invitados)
   const [cart, setCart] = useState(() => {
@@ -85,9 +98,51 @@ function App() {
     }
   }, [])
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      setCategoriesError('')
+      const data = await categoryApi.list()
+      setCategoryList(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('No se pudieron cargar las categorías', error)
+      setCategoriesError(error.message)
+      setCategoryList([])
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }, [])
+
+  const fetchUsers = useCallback(async () => {
+    if (!isAdmin || !token) {
+      setUsers([])
+      return
+    }
+
+    try {
+      setUsersError('')
+      setUsersLoading(true)
+      const data = await userApi.list(token)
+      setUsers(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('No se pudieron cargar los usuarios', error)
+      setUsersError(error.message)
+      setUsers([])
+    } finally {
+      setUsersLoading(false)
+    }
+  }, [isAdmin, token])
+
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
+  useEffect(() => {
+    fetchCategories()
+  }, [fetchCategories])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const handleAddToCart = (product) => {
     setCart(prevCart => {
@@ -274,6 +329,61 @@ function App() {
     }
   }
 
+  const slugify = (value) => {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+  }
+
+  const handleAddCategory = async (categoryData) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      const payload = {
+        name: categoryData.name,
+        slug: categoryData.slug || slugify(categoryData.name),
+        description: categoryData.description
+      }
+      const created = await categoryApi.create(token, payload)
+      setCategoryList(prev => [...prev, created])
+      return { success: true, category: created }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      await categoryApi.remove(token, categoryId)
+      setCategoryList(prev => prev.filter(cat => cat.id !== categoryId))
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
+  const handleUpdateUserRole = async (userId, role) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      const updated = await userApi.updateRole(token, userId, role)
+      setUsers(prev => prev.map(u => u.id === updated.id ? updated : u))
+      return { success: true, user: updated }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
   // Filtrar por categoría Y búsqueda
   const filteredProducts = allProducts.filter(p => {
     // Filtro de categoría
@@ -372,9 +482,19 @@ function App() {
 
   // Si es admin y está en página de admin
   if (isAdmin && location.pathname === '/admin') {
+    const categoryData = categoryList.length > 0
+      ? categoryList.map(cat => ({ value: cat.slug, label: cat.name, id: cat.id, description: cat.description }))
+      : DEFAULT_CATEGORY_OPTIONS
+
     return (
       <AdminPage
         products={allProducts}
+        categories={categoryData}
+        categoriesLoading={categoriesLoading}
+        categoriesError={categoriesError}
+        users={users}
+        usersLoading={usersLoading}
+        usersError={usersError}
         onLogout={handleLogout}
         onAddProduct={handleAdminAddProduct}
         onEditProduct={handleAdminEditProduct}
@@ -382,6 +502,9 @@ function App() {
         onRefresh={fetchProducts}
         loading={productsLoading}
         error={productsError}
+        onAddCategory={handleAddCategory}
+        onDeleteCategory={handleDeleteCategory}
+        onUpdateUserRole={handleUpdateUserRole}
       />
     )
   }
