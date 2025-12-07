@@ -30,6 +30,7 @@ const AdminPage = ({
   onUpdateUserRole,
   onDeleteUser,
   onUpdateOrderStatus,
+  onDeleteOrder,
   onRefresh,
   loading,
   error
@@ -218,6 +219,18 @@ const AdminPage = ({
       setOrderStatusMessage({ type: 'success', message: 'Estado actualizado' })
     } else {
       setOrderStatusMessage({ type: 'error', message: result?.message || 'No se pudo actualizar' })
+    }
+    setTimeout(() => setOrderStatusMessage(null), 4000)
+  }
+
+  const handleOrderDelete = async (order) => {
+    if (!onDeleteOrder) return
+    if (!window.confirm(`¿Eliminar la orden ${order.id}?`)) return
+    const result = await onDeleteOrder(order.id)
+    if (result?.success) {
+      setOrderStatusMessage({ type: 'success', message: 'Orden eliminada' })
+    } else {
+      setOrderStatusMessage({ type: 'error', message: result?.message || 'No se pudo eliminar' })
     }
     setTimeout(() => setOrderStatusMessage(null), 4000)
   }
@@ -543,32 +556,36 @@ const AdminPage = ({
                   {ordersError || orderStatusMessage?.message}
                 </div>
               )}
-              <div className="order-list-admin">
+              <div className="order-table">
+                <div className="order-table-header">
+                  <div>ID</div>
+                  <div>Cliente</div>
+                  <div>Total</div>
+                  <div>Estado</div>
+                  <div>Creada</div>
+                  <div>Acciones</div>
+                </div>
                 {orders.map(order => (
-                  <article key={order.id} className="order-admin-card">
-                    <header className="order-admin-header">
-                      <div>
-                        <small>ID ORDEN</small>
-                        <strong>{order.id}</strong>
-                      </div>
-                      <div>
-                        <small>Cliente</small>
-                        <strong>{order.formData?.fullName || '—'}</strong>
-                      </div>
-                      <div>
-                        <small>Total</small>
-                        <strong>{formatCLP(order.total)}</strong>
-                      </div>
-                      <div className="order-status-select">
-                        <small>Estado</small>
+                  <div key={order.id} className="order-table-card">
+                    <div className="order-table-row">
+                      <div className="cell" data-label="ID">{order.id}</div>
+                      <div className="cell" data-label="Cliente">{order.formData?.fullName || '—'}</div>
+                      <div className="cell" data-label="Total"><strong>{formatCLP(order.total)}</strong></div>
+                      <div className="cell" data-label="Estado">
                         <select value={order.status} onChange={(e) => handleOrderStatusChange(order, e.target.value)}>
                           {ORDER_STATUSES.map(statusOption => (
                             <option key={statusOption} value={statusOption}>{statusOption}</option>
                           ))}
                         </select>
                       </div>
-                    </header>
-                    <div className="order-admin-body">
+                      <div className="cell" data-label="Creada">{new Date(order.createdAt).toLocaleDateString('es-CL')}</div>
+                      <div className="cell order-actions" data-label="Acciones">
+                        <button className="btn-delete danger" onClick={() => handleOrderDelete(order)}>
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                    <div className="order-table-details">
                       <div>
                         <small>Contacto</small>
                         <p>{order.formData?.email}</p>
@@ -580,29 +597,17 @@ const AdminPage = ({
                         <p>{order.formData?.city}, {order.formData?.postalCode}</p>
                       </div>
                       <div>
-                        <small>Creada</small>
-                        <p>{new Date(order.createdAt).toLocaleDateString('es-CL')}</p>
+                        <small>Productos</small>
+                        {order.cartItems?.map(item => (
+                          <div key={item.productId || item.id} className="order-item-compact">
+                            <span>{item.name}</span>
+                            <span>{item.quantity} u.</span>
+                            <span>{formatCLP(item.price * item.quantity)}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="order-items-admin">
-                      {order.cartItems?.map(item => (
-                        <div key={item.productId || item.id} className="order-item-row">
-                          <div>
-                            <p>{item.name}</p>
-                            <small>SKU: {item.sku || '—'}</small>
-                          </div>
-                          <div>
-                            <small>Cant.</small>
-                            <p>{item.quantity}</p>
-                          </div>
-                          <div>
-                            <small>Total</small>
-                            <p>{formatCLP(item.price * item.quantity)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </article>
+                  </div>
                 ))}
               </div>
             </>
