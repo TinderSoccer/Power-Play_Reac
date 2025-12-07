@@ -468,3 +468,38 @@
   .order-admin-card { padding: 1rem; }
   .order-admin-header { flex-direction: column; align-items: flex-start; }
 }
+
+.admin-orders {
+  background: linear-gradient(135deg, #050816, #111b2e);
+  border-radius: 34px;
+  border: 1px solid rgba(59,130,246,0.15);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  color: #e2e8f0;
+}
+
+.order-admin-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148,163,184,0.2);
+  box-shadow: 0 25px 60px rgba(2,6,23,0.55);
+}
+
+.order-admin-card strong { color: #f8fafc; }
+.order-admin-card small { color: rgba(148,163,184,0.75); }
+
+.order-actions {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.btn-delete.danger {
+  background: transparent;
+  border-color: rgba(248,113,113,0.65);
+  color: #f87171;
+}
+
+.order-total-highlight {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #34d399;
+}
