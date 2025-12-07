@@ -339,6 +339,20 @@ function App() {
     }
   }
 
+  const handleAdminDeleteOrder = async (orderId) => {
+    if (!token) {
+      return { success: false, message: 'Debes iniciar sesión como administrador' }
+    }
+
+    try {
+      await orderApi.remove(token, orderId)
+      setAdminOrders(prev => prev.filter(order => order.id !== orderId))
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+
   const handleAdminAddProduct = async (productData) => {
     if (!token) {
       return { success: false, message: 'Debes iniciar sesión como administrador' }
@@ -613,6 +627,7 @@ function App() {
         onUpdateUserRole={handleUpdateUserRole}
         onDeleteUser={handleDeleteUser}
         onUpdateOrderStatus={handleAdminUpdateOrderStatus}
+        onDeleteOrder={handleAdminDeleteOrder}
       />
     )
   }

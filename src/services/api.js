@@ -75,6 +75,10 @@ export const orderApi = {
     method: 'PUT',
     body: { status },
     token
+  }),
+  remove: (token, id) => request(`/api/orders/${id}`, {
+    method: 'DELETE',
+    token
   })
 }
 
