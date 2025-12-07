@@ -1,10 +1,43 @@
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import '../styles/orders.css'
 
+const statusStyles = {
+  pendiente: 'pill-pending',
+  'en proceso': 'pill-processing',
+  enviado: 'pill-shipped',
+  completada: 'pill-completed',
+  cancelada: 'pill-cancelled'
+}
+
 const OrdersPage = ({ onGoHome }) => {
   const { user, getUserOrders } = useContext(AuthContext)
-  const userOrders = getUserOrders ? getUserOrders() : []
+  const userOrders = useMemo(() => (getUserOrders ? getUserOrders() : []), [getUserOrders])
+
+  const formatCLP = (value) =>
+    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value || 0)
+
+  const buildTimeline = (status = 'Pendiente') => {
+    const normalized = status.toLowerCase()
+    return [
+      { label: 'Orden recibida', description: 'Hemos recibido tu pedido', active: true },
+      {
+        label: 'Procesando pago',
+        description: 'Validando y preparando tus productos',
+        active: ['en proceso', 'enviado', 'completada'].includes(normalized)
+      },
+      {
+        label: 'Despachado',
+        description: 'Tu compra ya salió a reparto',
+        active: ['enviado', 'completada'].includes(normalized)
+      },
+      {
+        label: 'Completado',
+        description: 'Pedido entregado con éxito',
+        active: normalized === 'completada'
+      }
+    ]
+  }
 
   if (!user) {
     return (
@@ -44,56 +77,91 @@ const OrdersPage = ({ onGoHome }) => {
           <button onClick={onGoHome}>Explorar productos</button>
         </div>
       ) : (
-        <div className="orders-list">
-          {userOrders.map((order) => (
-            <article key={order.id} className="order-card">
-              <div className="order-summary">
-                <div>
-                  <small>ID Orden</small>
-                  <strong>{order.id}</strong>
-                </div>
-                <div>
-                  <small>Fecha</small>
-                  <strong>{new Date(order.createdAt).toLocaleDateString('es-CL')}</strong>
-                </div>
-                <div>
-                  <small>Estado</small>
-                  <strong className="order-status">{order.status || 'Pendiente'}</strong>
-                </div>
-              </div>
+        <div className="orders-grid">
+          {userOrders.map((order) => {
+            const status = order.status || 'Pendiente'
+            const normalizedStatus = status.toLowerCase()
+            const timeline = buildTimeline(status)
+            return (
+              <article key={order.id} className="order-card">
+                <header className="order-card-header">
+                  <div>
+                    <small>ID Orden</small>
+                    <strong>{order.id}</strong>
+                  </div>
+                  <div>
+                    <small>Fecha</small>
+                    <strong>{new Date(order.createdAt).toLocaleDateString('es-CL')}</strong>
+                  </div>
+                  <div>
+                    <span className={`status-pill ${statusStyles[normalizedStatus] || 'pill-pending'}`}>
+                      {status}
+                    </span>
+                  </div>
+                </header>
 
-              <div className="order-items">
-                <h4>Productos</h4>
-                {order.cartItems?.map((item, idx) => (
-                  <div key={idx} className="order-item">
-                    <div>
-                      <img src={item.image} alt={item.name} onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/60x60?text=Sin+Imagen'
-                      }} />
+                <div className="order-card-grid">
+                  <section className="order-section">
+                    <h4>Productos</h4>
+                    {order.cartItems?.map((item, idx) => (
+                      <div key={`${order.id}-${idx}`} className="order-item">
+                        <div className="order-item-info">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://via.placeholder.com/60x60?text=IMG'
+                            }}
+                          />
+                          <div>
+                            <p>{item.name}</p>
+                            <small>Cantidad: {item.quantity}</small>
+                          </div>
+                        </div>
+                        <strong>{formatCLP(item.price * item.quantity)}</strong>
+                      </div>
+                    ))}
+                  </section>
+
+                  <section className="order-section">
+                    <h4>Entrega</h4>
+                    <div className="order-detail-row">
+                      <span>Destinatario</span>
+                      <strong>{order.formData?.fullName ?? '—'}</strong>
+                    </div>
+                    <div className="order-detail-row">
+                      <span>Dirección</span>
+                      <strong>{order.formData?.address ?? '—'}</strong>
+                    </div>
+                    <div className="order-detail-row">
+                      <span>Ciudad</span>
+                      <strong>{order.formData?.city ?? '—'}</strong>
+                    </div>
+                    <div className="order-detail-row">
+                      <span>Contacto</span>
+                      <strong>{order.formData?.phone ?? order.formData?.email ?? '—'}</strong>
+                    </div>
+                    <div className="order-detail-row">
+                      <span>Total pagado</span>
+                      <strong>{formatCLP(order.total)}</strong>
+                    </div>
+                  </section>
+                </div>
+
+                <div className="order-timeline">
+                  {timeline.map((step, idx) => (
+                    <div key={`${order.id}-step-${idx}`} className={`timeline-step ${step.active ? 'active' : ''}`}>
+                      <span className="step-dot" />
                       <div>
-                        <p>{item.name}</p>
-                        <small>Cantidad: {item.quantity}</small>
+                        <p>{step.label}</p>
+                        <small>{step.description}</small>
                       </div>
                     </div>
-                    <strong>${(item.price * item.quantity).toLocaleString('es-CL')}</strong>
-                  </div>
-                ))}
-              </div>
-
-              <div className="order-details">
-                <div>
-                  <h5>Entrega</h5>
-                  <p>{order.formData?.fullName}</p>
-                  <p>{order.formData?.address}</p>
-                  <p>{order.formData?.city}, {order.formData?.postalCode}</p>
+                  ))}
                 </div>
-                <div>
-                  <h5>Total</h5>
-                  <p>${order.total?.toLocaleString('es-CL')}</p>
-                </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            )
+          })}
         </div>
       )}
     </div>
