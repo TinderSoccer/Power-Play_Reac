@@ -15,6 +15,10 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
     transferenceConfirmed: false,
     transactionId: ''
   })
+  const [creatingOrder, setCreatingOrder] = useState(false)
+  const [orderSnapshot, setOrderSnapshot] = useState(null)
+  const [orderCreated, setOrderCreated] = useState(null)
+  const [orderError, setOrderError] = useState('')
 
   const BANK_DATA = {
     bank: 'Banco De Chile',
@@ -65,12 +69,52 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
     return true
   }
 
-  const handleNextStep = () => {
-    if (validateStep()) {
-      if (step === 'details') {
-        setStep('payment')
-      } else if (step === 'payment') {
+  const handleNextStep = async () => {
+    if (!validateStep()) return
+
+    if (step === 'details') {
+      setStep('payment')
+      return
+    }
+
+    if (step === 'payment') {
+      if (!user || !createOrder) {
+        alert('Debes iniciar sesión para completar tu compra')
+        return
+      }
+
+      try {
+        setCreatingOrder(true)
+        setOrderError('')
+
+        const payload = {
+          status: 'Pendiente',
+          cartItems,
+          formData,
+          subtotal,
+          shipping: SHIPPING_COST,
+          total
+        }
+
+        const snapshot = {
+          items: cartItems.map(item => ({ ...item })),
+          subtotal,
+          shipping: SHIPPING_COST,
+          total,
+          formData: { ...formData }
+        }
+
+        const createdOrder = await createOrder(payload)
+        setOrderSnapshot(snapshot)
+        setOrderCreated(createdOrder)
         setStep('confirmation')
+        onClearCart()
+      } catch (error) {
+        console.error('No se pudo crear la orden', error)
+        setOrderError(error.message)
+        alert('No pudimos crear tu orden: ' + error.message)
+      } finally {
+        setCreatingOrder(false)
       }
     }
   }
@@ -83,26 +127,16 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
     }
   }
 
-  const handleConfirmOrder = async () => {
-    try {
-      if (user && createOrder) {
-        const orderData = {
-          status: 'Pendiente',
-          cartItems: cartItems,
-          formData: formData,
-          subtotal: subtotal,
-          shipping: SHIPPING_COST,
-          total: total
-        }
-        await createOrder(orderData)
-      }
-
-      alert('¡Orden creada exitosamente! Recibirás un email de confirmación en: ' + formData.email)
-      onClearCart()
-      onGoHome()
-    } catch (error) {
-      alert('No pudimos crear tu orden: ' + error.message)
-    }
+  const handleFinishCheckout = () => {
+    onGoHome()
+    setStep('details')
+    setOrderSnapshot(null)
+    setOrderCreated(null)
+    setFormData(prev => ({
+      ...prev,
+      transferenceConfirmed: false,
+      transactionId: ''
+    }))
   }
 
   return (
@@ -281,12 +315,19 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
                   </label>
                 </div>
 
+                {orderError && <p className="payment-error">⚠️ {orderError}</p>}
+
                 <div className="form-actions">
                   <button type="button" className="btn-back" onClick={handlePrevStep}>
                     ← Volver
                   </button>
-                  <button type="button" className="btn-next" onClick={handleNextStep}>
-                    Confirmar Orden →
+                  <button
+                    type="button"
+                    className="btn-next"
+                    onClick={handleNextStep}
+                    disabled={creatingOrder}
+                  >
+                    {creatingOrder ? 'Creando orden...' : 'Confirmé la transferencia →'}
                   </button>
                 </div>
               </div>
@@ -302,11 +343,16 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
 
               <div className="order-details">
                 <h3>📦 Detalles de la Orden</h3>
-
+                {orderCreated?.id && (
+                  <p className="order-code">ID de orden: <strong>{orderCreated.id}</strong></p>
+                )}
+                <p className="confirmation-note">
+                  Gracias por tu compra. Tu pago está siendo verificado.
+                </p>
                 <div className="detail-section">
                   <h4>Productos:</h4>
                   <div className="order-items">
-                    {cartItems.map(item => (
+                    {(orderSnapshot?.items || cartItems).map(item => (
                       <div key={item.id} className="order-item">
                         <span className="item-name">{item.name}</span>
                         <span className="item-qty">x{item.quantity}</span>
@@ -318,41 +364,48 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
                   <div className="order-summary">
                     <div className="summary-row">
                       <span>Subtotal:</span>
-                      <span>${subtotal.toLocaleString('es-CL')}</span>
+                      <span>${(orderSnapshot?.subtotal ?? subtotal).toLocaleString('es-CL')}</span>
                     </div>
                     <div className="summary-row">
                       <span>Envío:</span>
-                      <span>${SHIPPING_COST.toLocaleString('es-CL')}</span>
+                      <span>${(orderSnapshot?.shipping ?? SHIPPING_COST).toLocaleString('es-CL')}</span>
                     </div>
                     <div className="summary-row total">
                       <span>TOTAL:</span>
-                      <span>${total.toLocaleString('es-CL')}</span>
+                      <span>${(orderSnapshot?.total ?? total).toLocaleString('es-CL')}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="detail-section">
                   <h4>Datos de Entrega:</h4>
-                  <p><strong>{formData.fullName}</strong></p>
-                  <p>{formData.address}</p>
-                  <p>{formData.city}, {formData.postalCode}</p>
-                  <p>Teléfono: {formData.phone}</p>
-                  <p>Email: {formData.email}</p>
+                  <p><strong>{orderSnapshot?.formData?.fullName || formData.fullName}</strong></p>
+                  <p>{orderSnapshot?.formData?.address || formData.address}</p>
+                  <p>
+                    {orderSnapshot?.formData?.city || formData.city}, {orderSnapshot?.formData?.postalCode || formData.postalCode}
+                  </p>
+                  <p>Teléfono: {orderSnapshot?.formData?.phone || formData.phone}</p>
+                  <p>Email: {orderSnapshot?.formData?.email || formData.email}</p>
                 </div>
 
                 <div className="detail-section">
                   <h4>Información de Pago:</h4>
-                  <p>Transferencia Bancaria ID: <strong>{formData.transactionId}</strong></p>
+                  <p>
+                    Transferencia Bancaria ID: <strong>{orderSnapshot?.formData?.transactionId || formData.transactionId}</strong>
+                  </p>
                   <p>Estado: <span className="status-pending">⏳ Pendiente de Confirmación</span></p>
                 </div>
 
                 <div className="notification-box">
-                  <p>📧 Se ha enviado un email de confirmación a <strong>{formData.email}</strong></p>
+                  <p>
+                    📧 Se ha enviado un email de confirmación a
+                    <strong>{orderSnapshot?.formData?.email || formData.email}</strong>
+                  </p>
                   <p>🔔 Te notificaremos cuando recibamos tu transferencia</p>
                 </div>
 
-                <button type="button" className="btn-finish" onClick={handleConfirmOrder}>
-                  ✓ Finalizar Compra
+                <button type="button" className="btn-finish" onClick={handleFinishCheckout}>
+                  ✓ Volver a la tienda
                 </button>
               </div>
             </div>
@@ -364,7 +417,7 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
           <h3>📋 Resumen</h3>
 
           <div className="summary-items">
-            {cartItems.map(item => (
+            {(orderSnapshot?.items || cartItems).map(item => (
               <div key={item.id} className="summary-item">
                 <img src={item.image} alt={item.name} />
                 <div className="item-info">
@@ -379,15 +432,15 @@ const CheckoutPage = ({ cartItems, onGoHome, onClearCart }) => {
           <div className="summary-totals">
             <div className="total-row">
               <span>Subtotal:</span>
-              <span>${subtotal.toLocaleString('es-CL')}</span>
+              <span>${(orderSnapshot?.subtotal ?? subtotal).toLocaleString('es-CL')}</span>
             </div>
             <div className="total-row">
               <span>Envío:</span>
-              <span>${SHIPPING_COST.toLocaleString('es-CL')}</span>
+              <span>${(orderSnapshot?.shipping ?? SHIPPING_COST).toLocaleString('es-CL')}</span>
             </div>
             <div className="total-row final">
               <span>TOTAL:</span>
-              <span>${total.toLocaleString('es-CL')}</span>
+              <span>${(orderSnapshot?.total ?? total).toLocaleString('es-CL')}</span>
             </div>
           </div>
 
